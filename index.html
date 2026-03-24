@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ollaverse - The Local AI Toolkit</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #12121a;
+    --bg-card-hover: #1a1a28;
+    --border: #2a2a3a;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --accent: #7c5cfc;
+    --accent-glow: rgba(124, 92, 252, 0.15);
+    --green: #4ade80;
+    --cyan: #22d3ee;
+    --orange: #fb923c;
+    --pink: #f472b6;
+    --yellow: #facc15;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    position: relative;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero .tagline {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    color: var(--text-dim);
+    margin-top: 16px;
+    position: relative;
+  }
+
+  .hero .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 32px;
+    position: relative;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .filter-btn .count {
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--cat-color, var(--accent));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--cat-color, var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--accent-glow);
+    flex-shrink: 0;
+  }
+
+  .card-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .card-lang {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .card-features {
+    list-style: none;
+    font-size: 0.78rem;
+    color: var(--text);
+  }
+
+  .card-features li {
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .card-features li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--cat-color, var(--accent));
+    font-weight: bold;
+  }
+
+  .card-category {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-top: 16px;
+    background: rgba(255,255,255,0.05);
+    color: var(--cat-color, var(--text-dim));
+    border: 1px solid var(--cat-color, var(--border));
+  }
+
+  .ecosystem-header {
+    text-align: center;
+    padding: 40px 20px 0;
+  }
+
+  .ecosystem-header h2 {
+    font-size: 1.4rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .ecosystem-header p {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+
+  .architecture {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+
+  .arch-layer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .arch-layer::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  .arch-layer:last-child::after { display: none; }
+
+  .arch-label {
+    width: 100%;
+    text-align: center;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+
+  .arch-node {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .arch-node:hover {
+    border-color: var(--accent);
+    background: var(--bg-card-hover);
+  }
+
+  footer {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  footer a:hover { text-decoration: underline; }
+
+  .install-section {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+
+  .install-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .install-box h3 {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .install-cmd {
+    background: #000;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--green);
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .install-cmd .prompt {
+    color: var(--text-dim);
+    user-select: none;
+  }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; padding: 12px; }
+    .hero { padding: 40px 16px 30px; }
+    .hero .stats-row { gap: 20px; }
+    .controls { gap: 4px; }
+    .filter-btn { padding: 6px 12px; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>ollaverse</h1>
+  <p class="tagline">23 tools for running AI locally. No cloud. No API keys. Just your hardware.</p>
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-number">23</div>
+      <div class="stat-label">Tools</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">8</div>
+      <div class="stat-label">Categories</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">0</div>
+      <div class="stat-label">API Keys Required</div>
+    </div>
+  </div>
+</div>
+
+<div class="ecosystem-header">
+  <h2>Ecosystem Architecture</h2>
+  <p>From discovery to deployment, every layer of local AI is covered</p>
+</div>
+
+<div class="architecture">
+  <div class="arch-layer">
+    <div class="arch-label">Discovery & Selection</div>
+    <div class="arch-node" style="border-color: var(--blue)">hubtrend</div>
+    <div class="arch-node" style="border-color: var(--blue)">ollatag</div>
+    <div class="arch-node" style="border-color: var(--blue)">olcaps</div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-label">Management & Configuration</div>
+    <div class="arch-node" style="border-color: var(--green)">gollama</div>
+    <div class="arch-node" style="border-color: var(--green)">ollafit</div>
+    <div class="arch-node" style="border-color: var(--green)">ollaclean</div>
+    <div class="arch-node" style="border-color: var(--green)">olla</div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-label">Benchmarking & Evaluation</div>
+    <div class="arch-node" style="border-color: var(--orange)">ollarena</div>
+    <div class="arch-node" style="border-color: var(--orange)">modelbench</div>
+    <div class="arch-node" style="border-color: var(--orange)">olladiff</div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-label">Fleet & Infrastructure</div>
+    <div class="arch-node" style="border-color: var(--pink)">ollafleet</div>
+    <div class="arch-node" style="border-color: var(--pink)">ollama-fleet-mcp</div>
+    <div class="arch-node" style="border-color: var(--pink)">ollawatch</div>
+    <div class="arch-node" style="border-color: var(--pink)">ollametrics</div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-label">Development & Workflow</div>
+    <div class="arch-node" style="border-color: var(--cyan)">ollacode</div>
+    <div class="arch-node" style="border-color: var(--cyan)">ollatest</div>
+    <div class="arch-node" style="border-color: var(--cyan)">gitollama</div>
+    <div class="arch-node" style="border-color: var(--cyan)">ollapipe</div>
+    <div class="arch-node" style="border-color: var(--cyan)">ollarag</div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-label">Monitoring & Analytics</div>
+    <div class="arch-node" style="border-color: var(--yellow)">ollausage</div>
+    <div class="arch-node" style="border-color: var(--yellow)">shellsense</div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-label">Vision & Creative</div>
+    <div class="arch-node" style="border-color: var(--red)">scenesnap</div>
+    <div class="arch-node" style="border-color: var(--red)">visionlint</div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <button class="filter-btn active" data-filter="all">All <span class="count">23</span></button>
+  <button class="filter-btn" data-filter="Management">Management <span class="count">6</span></button>
+  <button class="filter-btn" data-filter="Monitoring">Monitoring <span class="count">3</span></button>
+  <button class="filter-btn" data-filter="Benchmarking">Benchmarking <span class="count">3</span></button>
+  <button class="filter-btn" data-filter="Development">Development <span class="count">3</span></button>
+  <button class="filter-btn" data-filter="Fleet">Fleet <span class="count">2</span></button>
+  <button class="filter-btn" data-filter="Search">Search <span class="count">3</span></button>
+  <button class="filter-btn" data-filter="Vision">Vision <span class="count">2</span></button>
+  <button class="filter-btn" data-filter="Pipeline">Pipeline <span class="count">1</span></button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="install-section">
+  <div class="install-box">
+    <h3>Quick Start</h3>
+    <div class="install-cmd">
+      <span class="prompt">$ </span>pip install olla
+    </div>
+    <div class="install-cmd">
+      <span class="prompt">$ </span>olla status
+    </div>
+    <div class="install-cmd">
+      <span class="prompt">$ </span>olla install ollarena ollawatch hubtrend
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Built by <a href="https://github.com/Obrais-cloud">Obrais</a></p>
+  <p style="margin-top: 8px">All tools run 100% locally with <a href="https://ollama.com">Ollama</a>. No data leaves your machine.</p>
+</footer>
+
+<script>
+const TOOLS = [
+  { name: "olla", description: "Unified launcher, status dashboard, and health checker for the entire ecosystem.", features: ["Single CLI entry point tying together all tools", "Status dashboard: Ollama connection, VRAM, models, disk", "Auto-generates shell aliases via olla setup"], language: "Python", category: "Management", icon: "~", color: "var(--green)" },
+  { name: "gollama", description: "Interactive TUI for managing Ollama models -- list, inspect, delete, copy, push, run, and link to LM Studio.", features: ["Interactive TUI with sorting, filtering, and hotkeys", "Edit Modelfiles and calculate vRAM usage", "Link models to LM Studio"], language: "Go", category: "Management", icon: "G", color: "var(--green)" },
+  { name: "ollafit", description: "Context window advisor for Apple Silicon -- calculates safe num_ctx to prevent OOM crashes.", features: ["Safe context window limits per model from actual RAM", "Compare quantizations and dual-model concurrency", "Live VRAM monitoring dashboard"], language: "Python", category: "Management", icon: "F", color: "var(--green)" },
+  { name: "ollaclean", description: "Model hygiene CLI -- track staleness, check for updates, analyze disk with shared-blob awareness.", features: ["Detect stale models and check for upstream updates", "Blob analysis with per-model breakdown and orphan detection", "Safe cleanup with dry-run preview"], language: "Python", category: "Management", icon: "C", color: "var(--green)" },
+  { name: "ollatag", description: "Tag models by use-case, then find the best model for any task.", features: ["Tag models with custom labels and notes", "Pick best model for a task, ranked by params", "Auto-tag based on model family heuristics"], language: "Python", category: "Management", icon: "#", color: "var(--green)" },
+  { name: "olcaps", description: "Capability scanner -- see what each model supports: vision, tools, thinking, embeddings, code.", features: ["Detect capabilities via heuristics and API metadata", "Filter models by capability flags", "JSON output for automation"], language: "Python", category: "Management", icon: "?", color: "var(--green)" },
+  { name: "ollawatch", description: "Real-time terminal dashboard for monitoring multiple Ollama instances simultaneously.", features: ["Multi-host health, version, latency, and running models", "Auto-refresh with keyboard navigation", "VRAM usage and model expiration timers"], language: "Python", category: "Monitoring", icon: "W", color: "var(--yellow)" },
+  { name: "ollametrics", description: "Prometheus exporter -- exposes OpenMetrics data for Grafana dashboards.", features: ["Instance health, model counts, VRAM usage metrics", "Multi-host with per-host labels", "Standard Prometheus histogram/counter/gauge types"], language: "Python", category: "Monitoring", icon: "M", color: "var(--yellow)" },
+  { name: "ollausage", description: "Track token usage via transparent proxy and calculate cloud API savings.", features: ["Transparent proxy logs every token, zero config", "Per-model usage dashboards with daily timeline", "Savings calculator vs GPT-4o, Claude, Gemini"], language: "Python", category: "Monitoring", icon: "$", color: "var(--yellow)" },
+  { name: "ollarena", description: "Terminal battle arena -- compare models side-by-side with ELO ratings and blind mode.", features: ["Head-to-head battles with parallel execution", "ELO ratings and persistent leaderboard", "Blind mode hides names until after voting"], language: "Python", category: "Benchmarking", icon: "A", color: "var(--orange)" },
+  { name: "modelbench", description: "Speed and throughput benchmarking -- TTFT, tok/s, prompt processing across context sizes.", features: ["Measures TTFT, gen tok/s, prompt tok/s, wall-clock", "Small, medium, and large context size tests", "Markdown report generation"], language: "Python", category: "Benchmarking", icon: "B", color: "var(--orange)" },
+  { name: "olladiff", description: "Regression tester -- snapshot eval results and detect quality changes across model updates.", features: ["10-question eval suite with deterministic settings", "Diff snapshots showing improved/degraded/unchanged", "JSON history for automation"], language: "Python", category: "Benchmarking", icon: "D", color: "var(--orange)" },
+  { name: "ollacode", description: "Find the best local model for Claude Code with Anthropic API compatibility testing.", features: ["Scan models for Anthropic API compatibility", "Benchmark coding: generation, bug fixing, explanation", "Generate ready-to-use Claude Code config"], language: "Python", category: "Development", icon: "&lt;&gt;", color: "var(--cyan)" },
+  { name: "ollatest", description: "Generate pytest tests for Python files using local models.", features: ["Auto-picks best coding model for test generation", "Focus on specific functions or edge cases", "Detect untested functions via coverage comparison"], language: "Python", category: "Development", icon: "T", color: "var(--cyan)" },
+  { name: "gitollama", description: "Git operations powered by local models -- commit messages, code review, changelogs.", features: ["Generate commit messages from staged diffs", "Code review for bugs, security, style", "Explain commits and generate changelogs"], language: "Python", category: "Development", icon: "g", color: "var(--cyan)" },
+  { name: "ollafleet", description: "Smart proxy making multiple Ollama instances act as one with intelligent routing.", features: ["Route by model availability and loaded state", "Prefer nodes with models in VRAM (no cold starts)", "X-Ollafleet-Node header for request tracing"], language: "Python", category: "Fleet", icon: "&gt;&gt;", color: "var(--pink)" },
+  { name: "ollama-fleet-mcp", description: "Fleet-aware MCP server for Claude Code with smart routing and model comparison.", features: ["MCP tools for fleet status, generation, comparison", "Smart routing preferring loaded models", "Pull models to specific nodes"], language: "TypeScript", category: "Fleet", icon: "{}", color: "var(--pink)" },
+  { name: "hubtrend", description: "Browse trending Hugging Face models, papers, spaces, and datasets from the terminal.", features: ["Filter by task type or GGUF/Ollama compatibility", "Daily papers with date filtering", "Track new models with --new highlighting"], language: "Python", category: "Search", icon: "H", color: "var(--blue)" },
+  { name: "ollarag", description: "Dead-simple local RAG -- query your codebase with Ollama, no vector database needed.", features: ["Index directories with code-aware chunking", "TF-IDF retrieval with source citations", "30+ file types, auto-excludes .git/node_modules"], language: "Python", category: "Search", icon: "Q", color: "var(--blue)" },
+  { name: "shellsense", description: "Search shell history by meaning using embeddings -- describe what you want, not the exact command.", features: ["Semantic search via nomic-embed-text", "Deduplicate and index history", "Time filtering and clipboard copy"], language: "Python", category: "Search", icon: "S", color: "var(--blue)" },
+  { name: "ollapipe", description: "Pipeline builder -- chain prompts through multiple models sequentially.", features: ["Pipe prompts through models, each gets prior output", "Built-in review, translate, summarize templates", "Custom pipelines via YAML files"], language: "Python", category: "Pipeline", icon: "|", color: "var(--accent)" },
+  { name: "scenesnap", description: "Visual analysis for filmmakers -- scene descriptions, mood, color, and cinematography from stills.", features: ["Scene description, mood, and color palette extraction", "Frame comparison for visual continuity", "Built for documentary production workflows"], language: "Python", category: "Vision", icon: "V", color: "var(--red)" },
+  { name: "visionlint", description: "Screenshot-based UI reviewer -- get actionable UI/UX feedback from vision models.", features: ["Analyze layout, typography, color, components", "Compare screenshots for visual regression", "macOS capture-and-analyze workflow"], language: "Python", category: "Vision", icon: "L", color: "var(--red)" }
+];
+
+const CATEGORY_COLORS = {
+  Management: "var(--green)",
+  Monitoring: "var(--yellow)",
+  Benchmarking: "var(--orange)",
+  Development: "var(--cyan)",
+  Fleet: "var(--pink)",
+  Search: "var(--blue)",
+  Vision: "var(--red)",
+  Pipeline: "var(--accent)"
+};
+
+function createCard(tool) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.setProperty('--cat-color', CATEGORY_COLORS[tool.category]);
+
+  const header = document.createElement('div');
+  header.className = 'card-header';
+
+  const icon = document.createElement('div');
+  icon.className = 'card-icon';
+  icon.style.color = CATEGORY_COLORS[tool.category];
+  icon.textContent = tool.icon;
+
+  const name = document.createElement('span');
+  name.className = 'card-name';
+  name.textContent = tool.name;
+
+  const lang = document.createElement('span');
+  lang.className = 'card-lang';
+  lang.textContent = tool.language;
+
+  header.appendChild(icon);
+  header.appendChild(name);
+  header.appendChild(lang);
+
+  const desc = document.createElement('p');
+  desc.className = 'card-desc';
+  desc.textContent = tool.description;
+
+  const features = document.createElement('ul');
+  features.className = 'card-features';
+  tool.features.forEach(function(f) {
+    const li = document.createElement('li');
+    li.textContent = f;
+    features.appendChild(li);
+  });
+
+  const category = document.createElement('span');
+  category.className = 'card-category';
+  category.style.setProperty('--cat-color', CATEGORY_COLORS[tool.category]);
+  category.textContent = tool.category;
+
+  card.appendChild(header);
+  card.appendChild(desc);
+  card.appendChild(features);
+  card.appendChild(category);
+
+  return card;
+}
+
+function renderCards(filter) {
+  var grid = document.getElementById('grid');
+  while (grid.firstChild) {
+    grid.removeChild(grid.firstChild);
+  }
+
+  var filtered = filter === 'all' ? TOOLS : TOOLS.filter(function(t) { return t.category === filter; });
+
+  filtered.forEach(function(tool) {
+    grid.appendChild(createCard(tool));
+  });
+}
+
+document.getElementById('controls').addEventListener('click', function(e) {
+  var btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderCards(btn.dataset.filter);
+});
+
+renderCards('all');
+</script>
+
+</body>
+</html>
