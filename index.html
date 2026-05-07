@@ -387,7 +387,7 @@
 
 <div class="hero">
   <h1>ollaverse</h1>
-  <p class="tagline">24 tools for running AI locally. No cloud. No API keys. Just your hardware.</p>
+  <p class="tagline">25 tools for running AI locally. No cloud. No API keys. Just your hardware.</p>
   <div class="stats-row">
     <div class="stat">
       <div class="stat-number">23</div>
@@ -435,6 +435,7 @@
     <div class="arch-node" style="border-color: var(--pink)">ollama-fleet-mcp</div>
     <div class="arch-node" style="border-color: var(--pink)">ollawatch</div>
     <div class="arch-node" style="border-color: var(--pink)">ollametrics</div>
+    <div class="arch-node" style="border-color: var(--pink)">ollawake</div>
   </div>
   <div class="arch-layer">
     <div class="arch-label">Development & Workflow</div>
@@ -509,6 +510,7 @@ const TOOLS = [
   { name: "ollatest", description: "Generate pytest tests for Python files using local models.", features: ["Auto-picks best coding model for test generation", "Focus on specific functions or edge cases", "Detect untested functions via coverage comparison"], language: "Python", category: "Development", icon: "T", color: "var(--cyan)" },
   { name: "gitollama", description: "Git operations powered by local models -- commit messages, code review, changelogs.", features: ["Generate commit messages from staged diffs", "Code review for bugs, security, style", "Explain commits and generate changelogs"], language: "Python", category: "Development", icon: "g", color: "var(--cyan)" },
   { name: "ollafim", description: "Fill-In-the-Middle HTTP server -- local Copilot-style autocomplete for any FIM-aware editor plugin.", features: ["OpenAI-compatible /v1/completions endpoint with streaming", "Auto-wraps FIM tokens for qwen, deepseek-coder, codestral, codellama, starcoder, codegemma", "Zero deps beyond Python stdlib"], language: "Python", category: "Development", icon: "I", color: "var(--cyan)" },
+  { name: "ollawake", description: "Wake-on-LAN coordinator -- wake sleeping fleet machines before routing inference requests.", features: ["Magic-packet WoL with multi-packet repeat for reliability", "Ensure command waits until Ollama responds", "Learn command bootstraps MAC via SSH (powershell/ifconfig/ip link)"], language: "Python", color: "var(--pink)", category: "Fleet", icon: "~" },
   { name: "ollafleet", description: "Smart proxy making multiple Ollama instances act as one with intelligent routing.", features: ["Route by model availability and loaded state", "Prefer nodes with models in VRAM (no cold starts)", "X-Ollafleet-Node header for request tracing"], language: "Python", category: "Fleet", icon: "&gt;&gt;", color: "var(--pink)" },
   { name: "ollama-fleet-mcp", description: "Fleet-aware MCP server for Claude Code with smart routing and model comparison.", features: ["MCP tools for fleet status, generation, comparison", "Smart routing preferring loaded models", "Pull models to specific nodes"], language: "TypeScript", category: "Fleet", icon: "{}", color: "var(--pink)" },
   { name: "hubtrend", description: "Browse trending Hugging Face models, papers, spaces, and datasets from the terminal.", features: ["Filter by task type or GGUF/Ollama compatibility", "Daily papers with date filtering", "Track new models with --new highlighting"], language: "Python", category: "Search", icon: "H", color: "var(--blue)" },

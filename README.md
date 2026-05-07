@@ -2,7 +2,7 @@
 
 A beautiful static portfolio page showcasing the entire local AI toolkit ecosystem.
 
-24 tools across 8 categories -- management, monitoring, benchmarking, development, fleet orchestration, search, vision, and pipelines. All running 100% locally with Ollama.
+25 tools across 8 categories -- management, monitoring, benchmarking, development, fleet orchestration, search, vision, and pipelines. All running 100% locally with Ollama.
 
 ## View
 
