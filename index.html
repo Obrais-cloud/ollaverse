@@ -496,6 +496,7 @@
 
 <script>
 const TOOLS = [
+  {name: "ollaroute", description: "Smart model router for Ollama — auto-routes prompts to the best local model by task type", category: "fleet orchestration", language: "python"},
   { name: "olla", description: "Unified launcher, status dashboard, and health checker for the entire ecosystem.", features: ["Single CLI entry point tying together all tools", "Status dashboard: Ollama connection, VRAM, models, disk", "Auto-generates shell aliases via olla setup"], language: "Python", category: "Management", icon: "~", color: "var(--green)" },
   { name: "gollama", description: "Interactive TUI for managing Ollama models -- list, inspect, delete, copy, push, run, and link to LM Studio.", features: ["Interactive TUI with sorting, filtering, and hotkeys", "Edit Modelfiles and calculate vRAM usage", "Link models to LM Studio"], language: "Go", category: "Management", icon: "G", color: "var(--green)" },
   { name: "ollafit", description: "Context window advisor for Apple Silicon -- calculates safe num_ctx to prevent OOM crashes.", features: ["Safe context window limits per model from actual RAM", "Compare quantizations and dual-model concurrency", "Live VRAM monitoring dashboard"], language: "Python", category: "Management", icon: "F", color: "var(--green)" },
